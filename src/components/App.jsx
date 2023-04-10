@@ -27,7 +27,7 @@ export const App = () => {
   //   modal: null,
   // };
 
-  api_searching = (search, pages) => {
+  const api_searching = (search, pages) => {
     Api.serching(search, pages)
       .then(response => {
         return response.data;
@@ -94,7 +94,6 @@ export const App = () => {
   //   return;
   // };
 
-  const modal = this.state.modal;
   const currentImages = this.state.pages * 12;
   const isMoreImages = this.state.pages > 0 && this.state.pages * 12 < this.state.totalImages;
   return (
