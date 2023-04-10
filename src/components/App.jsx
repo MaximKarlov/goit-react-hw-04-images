@@ -28,7 +28,6 @@ export const App = () => {
       })
       .then(({ hits, totalHits }) => {
         setTotalImages(totalHits);
-        console.log('hits', hits);
         hits.map(el => {
           let articles = {
             id: el.id,
