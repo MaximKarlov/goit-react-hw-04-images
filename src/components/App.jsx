@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Api from '../Api/Api_query';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
@@ -14,18 +14,12 @@ export const App = () => {
   const [searchImages, setSearchImages] = useState([]);
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(STATUS.pending);
-  const [newSearch, setNewSearch] = useState(false);
   const [totalImages, setTotalImages] = useState(0);
   const [modal, setModal] = useState(null);
-  // state = {
-  //   pages: 0,
-  //   searchImages: [],
-  //   search: '',
-  //   isLoading: STATUS.pending,
-  //   newSearch: false,
-  //   totalImages: 0,
-  //   modal: null,
-  // };
+
+  useEffect(() => {
+    setSearchImages([]);
+  }, [search]);
 
   const api_searching = (search, pages) => {
     Api.serching(search, pages)
@@ -33,7 +27,8 @@ export const App = () => {
         return response.data;
       })
       .then(({ hits, totalHits }) => {
-        this.setState({ totalImages: totalHits });
+        setTotalImages(totalHits);
+        console.log('hits', hits);
         hits.map(el => {
           let articles = {
             id: el.id,
@@ -41,74 +36,60 @@ export const App = () => {
             largeImageURL: el.largeImageURL,
             webformatURL: el.webformatURL,
           };
-          return this.setState(prevState => {
-            return {
-              searchImages: [...prevState.searchImages, articles],
-            };
-          });
+          return setSearchImages(prevState => [...prevState, articles]);
         });
-        return hits;
       })
       .catch(error => {
         console.log(error.message);
       })
       .finally(() => {
-        this.setState({ isLoading: STATUS.pending });
+        setIsLoading(STATUS.pending);
       });
   };
 
-  // componentDidUpdate(_, prevState) {
-  //   const { search, pages, newSearch } = this.state;
-  //   if (newSearch === true && prevState.search !== this.state.search) {
-  //     this.setState({ searchImages: [] });
-  //     this.api_searching(search, 1);
-  //   }
-  //   if (prevState.search === this.state.search && prevState.pages !== this.state.pages && prevState !== this.state) {
-  //     try {
-  //       this.api_searching(search, pages);
-  //     } catch (error) {
-  //       console.error('ERROR....', error);
-  //     }
-  //   }
-  // }
+  const onSubmitHandler = ({ newSearch, search, pages }) => {
+    setPages(pages);
+    setSearch(search);
+    if (newSearch === true) {
+      setIsLoading(STATUS.loading);
+      api_searching(search, pages);
+    }
+  };
 
-  // onSubmitHandler = ({ newSearch, search, pages }) => {
-  //   this.setState({ newSearch, pages, search, isLoading: STATUS.loading });
-  // };
-  // handleClick = largeImage => {
-  //   this.setState({ modal: largeImage });
-  // };
-  // closeModal = () => {
-  //   this.setState({ modal: null });
-  // };
+  const handleClick = largeImage => {
+    setModal(largeImage);
+  };
+  const closeModal = () => {
+    setModal(null);
+  };
 
-  // onloadMoreImages = () => {
-  //   this.setState(prevState => {
-  //     return { pages: prevState.pages + 1, isLoading: STATUS.loading };
-  //   });
-  // };
+  const onloadMoreImages = () => {
+    let nextPage = pages;
+    nextPage += 1;
+    setPages(nextPage);
+    setIsLoading(STATUS.loading);
+    try {
+      api_searching(search, nextPage);
+    } catch (error) {
+      console.error('ERROR....', error);
+    }
+  };
 
-  // sendMessage = () => {
-  //   if (this.state.totalImages === 0) return;
-  //   else if (this.state.searchImages.length < this.state.totalImages) return;
-  //   return;
-  // };
-
-  const currentImages = this.state.pages * 12;
-  const isMoreImages = this.state.pages > 0 && this.state.pages * 12 < this.state.totalImages;
+  const currentImages = pages * 12;
+  const isMoreImages = pages > 0 && pages * 12 < totalImages;
   return (
     <div>
-      <Searchbar onSubmit={this.onSubmitHandler} />
+      <Searchbar onSubmit={onSubmitHandler} />
       <ImageGallery
-        images={this.state.searchImages}
-        status={this.state.isLoading}
-        totalHits={this.state.totalImages}
+        images={searchImages}
+        status={isLoading}
+        totalHits={totalImages}
         currentImages={currentImages}
         isMoreImages={isMoreImages}
-        onClick={this.handleClick}
-        loadMoreImages={this.onloadMoreImages}
+        onClick={handleClick}
+        loadMoreImages={onloadMoreImages}
       />
-      {modal ? <Modal options={modal} closeModal={this.closeModal} /> : ''}
+      {modal ? <Modal options={modal} closeModal={closeModal} /> : ''}
     </div>
   );
 };
