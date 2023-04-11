@@ -5,31 +5,17 @@ import { ImageGalleryItem } from '../ImageGallery/ImageGalleryItem';
 import Notiflix from 'notiflix';
 import ImageCss from './Image.module.css';
 
-export const ImageGallery = ({ images, onClick, status, isMoreImages, loadMoreImages, totalHits, currentImages }) => (
+export const ImageGallery = ({ images, onClick, status, isMoreImages, loadMoreImages, totalHits, currentImages, endPages }) => (
   <>
     {images.length > 0 && (
       <ul className={ImageCss.gallery}>
         {images.map(({ id, largeImageURL, tag, webformatURL }) => (
-          <ImageGalleryItem
-            largeImage={largeImageURL}
-            id={id}
-            key={webformatURL}
-            tags={tag}
-            webFormat={webformatURL}
-            onClick={onClick}
-          />
+          <ImageGalleryItem largeImage={largeImageURL} id={id} key={webformatURL} tags={tag} webFormat={webformatURL} onClick={onClick} />
         ))}
       </ul>
     )}
-    {status === 'loading' ? (
-      <Loader />
-    ) : isMoreImages > 0 ? (
-      <LoadMore onClick={loadMoreImages} />
-    ) : currentImages <= totalHits ? (
-      ''
-    ) : (
-      Notiflix.Notify.warning('Це остання сторінка')
-    )}
+    {status === 'loading' ? <Loader /> : isMoreImages === true ? <LoadMore onClick={loadMoreImages} /> : ''}
+    {endPages && Notiflix.Notify.warning('Це остання сторінка')};
   </>
 );
 
